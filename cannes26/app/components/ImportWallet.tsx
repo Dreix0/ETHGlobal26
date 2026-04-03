@@ -29,7 +29,7 @@ export default function ImportWallet() {
             setWallet(newWallet);
             const encryptedWallet = await newWallet.encrypt(e.currentTarget.password.value);
             const content : string = JSON.stringify({
-                token: ["ERC20 tokens list"],
+                token: [],
                 wallet: encryptedWallet
             });
 
