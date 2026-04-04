@@ -1,51 +1,120 @@
 import { useState } from "react";
-import { Wallet, HDNodeWallet } from "ethers";
+import { Wallet, HDNodeWallet, Mnemonic } from "ethers";
 import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
+import { useRouter } from "next/navigation";
 
 export default function ImportWallet({ show, onClose }: { show: boolean, onClose: () => void }) {
     const [wallet, setWallet] = useState<HDNodeWallet>();
-    const [Mnemonic, setMnemonic] = useState<string>(""); // Variable qui stocke la seed phrase entré par l'utilisateur
-    
-    function SubmitMnemonic(e : React.FormEvent<HTMLFormElement>) {
-        /* 
-        Fonction qui permet de récupérer la seed phrase (Mnemonic) entré par l'utilisateur puis l'envoyer sur la page suivante (définition du mot de passe)
-        */
-        e.preventDefault();
-        setMnemonic(e.currentTarget.seedphrase.value);
-    }
+    const [mnemonic, setMnemonic] = useState<string>(""); // Seed phrase de l'utilisateur
+    const [folderPath, setFolderPath] = useState<string | null>(null);
+    const [password, setPassword] = useState("");
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const router = useRouter();
 
-    async function newWallet(e : React.FormEvent<HTMLFormElement>) {
-        /* 
-        Fonction qui permet de créer un nouveau wallet, le crypter (par le mot de passe entré par l'utilisateur, lui même crypté) 
-        avant de le stocker et retourner la seed phrase 
-        */
-        e.preventDefault();
+    // Slide 1 : Choisir un dossier
+    const SlideFolder = (
+        <div>
+            <h2>Étape 1 : Choisir un dossier</h2>
+            <p>Choisissez un dossier où votre wallet sera enregistré.</p>
+            <button
+                onClick={async () => {
+                    const path = await open({ title: "Choisir un dossier", multiple: false, directory: true });
+                    console.log("Dossier sélectionné : ", path);
+                    if (path) {
+                        setFolderPath(path as string);
+                        setCurrentSlide(1);
+                    }
+                }}
+            >
+                Sélectionner un dossier
+            </button>
+        </div>
+    );
 
-        // Remplace ce chemin par un emplacement sur ton disque ou USB
-        const filePath = "C:/Users/quent/Desktop/Test/wallet.plr";
+    // --- Slide 2 : Saisie de la mnemonic ---
+    const SlideMnemonic = (
+        <div>
+            <h2>Étape 2 : Entrer votre phrase de récupération</h2>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    const phrase = (e.currentTarget.seedphrase as HTMLTextAreaElement).value.trim();
+                    if (!Mnemonic.isValidMnemonic(phrase)) {
+                        alert("La phrase de récupération n'est pas valide !");
+                        return;
+                    }
+                    setMnemonic(phrase);
+                    setCurrentSlide(2);
+                }}
+            >
+                <textarea
+                    name="seedphrase"
+                    placeholder="Entrez votre phrase de récupération"
+                    style={{ width: "100%", height: "100px" }}
+                    required
+                />
+                <br />
+                <button type="submit">Suivant</button>
+            </form>
+        </div>
+    );
 
-        try{
-            const newWallet = Wallet.fromPhrase(Mnemonic); // Crypter directement le wallet avec le mot de passe de l'utilisateur ?
-            setWallet(newWallet);
-            const encryptedWallet = await newWallet.encrypt(e.currentTarget.password.value);
-            const content : string = JSON.stringify({
-                token: [{
-                    "name": "Ethereum",
-                    "symbol": "ETH",
-                    "address": "",
-                    "decimals": 18,
-                    "balance": "0"
-                }],
-                wallet: encryptedWallet
-            });
+    // --- Slide 3 : Saisie du mot de passe et création du wallet ---
+    const SlidePassword = (
+        <div>
+            <h2>Étape 3 : Définir un mot de passe</h2>
+            <form
+                onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!folderPath) {
+                        alert("Veuillez sélectionner un dossier");
+                        setCurrentSlide(0);
+                        return;
+                    }
+                    if (!mnemonic) {
+                        alert("Veuillez entrer une phrase de récupération valide");
+                        setCurrentSlide(1);
+                        return;
+                    }
+                    if (!password) {
+                        alert("Veuillez entrer un mot de passe");
+                        return;
+                    }
 
-            const response = await invoke("write_text_to_file", {filePath, content: newWallet ? content : "No wallet generated"});
-            console.log(response);
+                    try {
+                        const newWallet = Wallet.fromPhrase(mnemonic);
+                        setWallet(newWallet);
 
-        } catch(err) {
-            console.log("Erreur : " + err)
-        }
-    }
+                        const encryptedWallet = await newWallet.encrypt(password);
+                        const content: string = JSON.stringify({
+                            token: [{ name: "Ethereum", symbol: "ETH", address: "", decimals: 18, balance: "0" }],
+                            wallet: encryptedWallet,
+                        });
+
+                        const filePath = folderPath + "/wallet.plr";
+                        await invoke("write_text_to_file", { filePath, content });
+
+                        router.push("/dashboard");
+                    } catch (err) {
+                        console.error("Erreur : ", err);
+                        alert("Erreur lors de l'importation du wallet");
+                    }
+                }}
+            >
+                <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Mot de passe"
+                    required
+                />
+                <button type="submit">Terminer</button>
+            </form>
+        </div>
+    );
+
+    const slides = [SlideFolder, SlideMnemonic, SlidePassword];
 
     // Fonction pour stopper la propagation du clic à l'overlay
     const handlePopupClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -59,7 +128,12 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
         <button className="closeBtn" onClick={onClose}>
           &times;
         </button>
-            <div>
+
+        <div className="slideContent">
+          {slides[currentSlide]}
+        </div>
+
+            {/* <div>
                 <div>
                     <h3>Saisissez votre phrase de récupération</h3>
                     <form onSubmit={SubmitMnemonic}>
@@ -81,7 +155,7 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
             <br />
             <p>Address: {wallet ? wallet.address : "No wallet generated"}</p>
             <p>Private Key: {wallet ? wallet.privateKey : "No wallet generated"}</p>
-            <p>Mnemonic: {wallet ? wallet.mnemonic?.phrase : "No wallet generated"}</p>
+            <p>Mnemonic: {wallet ? wallet.mnemonic?.phrase : "No wallet generated"}</p> */}
         </div>
     </main>
     );
