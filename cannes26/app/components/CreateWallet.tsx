@@ -23,6 +23,7 @@ export default function CreateWallet() {
                 token: [{
                     "name": "Ethereum",
                     "symbol": "ETH",
+                    "address": "",
                     "decimals": 18,
                     "balance": "0"
                 }],

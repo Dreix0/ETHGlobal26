@@ -6,14 +6,18 @@ import { formatUnits } from "viem";
 type TokenData = {
   name: string;
   symbol: string;
+  address: string;
   decimals: number;
   balance: bigint;
 };
 
-export default function ReadTokenList(filePath: string | null) {
+export default function ReadTokenList() {
     const [tokenList, setTokenList] = useState<TokenData[]>([]);
 
   async function readFile() {
+
+    // Remplace ce chemin par un emplacement sur ton disque ou USB
+    const filePath = "C:/Users/quent/Desktop/Test/mon_texte.txt";
 
     try {
       const data = await invoke("read_text_from_file", {filePath}) as string;

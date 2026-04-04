@@ -8,6 +8,7 @@ import { invoke } from "@tauri-apps/api/core";
 type TokenData = {
   name: string;
   symbol: string;
+  address: string;
   decimals: number;
   balance: bigint;
 };
@@ -51,6 +52,7 @@ export default function AddToken({ userAddress, tokenAddress }: Props) {
       const tokenData: TokenData = {
         name: results[0].result as string,
         symbol: results[1].result as string,
+        address: tokenAddress,
         decimals: results[2].result as number,
         balance: results[3].result as bigint,
       };
@@ -69,6 +71,7 @@ export default function AddToken({ userAddress, tokenAddress }: Props) {
       json.token.push({
         name: tokenData.name,
         symbol: tokenData.symbol,
+        address: tokenData.address,
         decimals: tokenData.decimals,
         balance: tokenData.balance.toString() // bigint → string pour JSON
       });

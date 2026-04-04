@@ -12,6 +12,7 @@ import GetTokenData from "./components/GetTokenData";
 import UpdateTokenBalance from "./components/UpdateTokenBalance";
 import AddToken from "./components/AddToken";
 import ReadTokenList from "./components/ReadTokenList";
+import Login from "./components/Login";
 
 export default function Home() {
 
@@ -56,16 +57,7 @@ export default function Home() {
 
   return (
     <main>
-      <h1>Se connecter</h1>
-      <button onClick={getPath}>
-        Sélectionner un fichier .plr
-      </button>
-      <p>{filePath || "Aucun fichier sélectionné"}</p>
-      <ReadTokenList filePath={filePath} />
-      <hr />
-      <CreateWallet />
-      <ImportWallet />
-      <ReadWallet />
+      <Login />
       <button onClick={goToDashboard}>Go to dashboard</button>
     </main>
   );

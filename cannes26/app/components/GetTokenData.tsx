@@ -10,6 +10,7 @@ type Props = {
 type TokenData = {
   name: string;
   symbol: string;
+  address: string;
   decimals: number;
   balance: bigint;
 };
@@ -54,7 +55,7 @@ export default function GetTokenData({ tokens, userAddress }: Props)  {
       const decimals = results[baseIndex + 2]?.result as number;
       const balance = results[baseIndex + 3]?.result as bigint;
 
-      newDatas[token] = {name,symbol,decimals,balance};
+      newDatas[token] = {name,symbol,address:token,decimals,balance};
     });
 
     setDatas(newDatas);
