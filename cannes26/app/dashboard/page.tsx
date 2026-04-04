@@ -2,6 +2,7 @@
 
 import { Address } from "viem";
 import { useRouter } from "next/navigation";
+import { invoke } from "@tauri-apps/api/core";
 
 import ReadWallet from "./../components/ReadWallet";
 import GetTokenData from "./../components/GetTokenData";
@@ -9,9 +10,19 @@ import UpdateTokenBalance from "./../components/UpdateTokenBalance";
 import AddToken from "./../components/AddToken";
 import ReadTokenList from "./../components/ReadTokenList";
 
+
+type TokenData = {
+  name: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  balance: bigint;
+};
+
 export default function Home() {
 
   const router = useRouter();
+  const savedPath = localStorage.getItem("filePath");
 
   // Exemple d'adresse et de tokens pour les tests
   const address = "0x2CfF890f0378a11913B6129B2E97417a2c302680";
@@ -22,6 +33,26 @@ export default function Home() {
     "0xdAC17F958D2ee523a2206206994597C13D831ec7" as Address
   ];
 
+  async function getAddressList() {
+  
+    try {
+      const data = await invoke("read_text_from_file", {filePath: localStorage.getItem("filePath")}) as string;
+      const tokens: TokenData[] = JSON.parse(data).token;
+
+      // Extraction des adresses non vides
+      const addresses = tokens
+        .map((token) => token.address)
+        .filter((address): address is string => !!address && address.trim() !== "");
+
+      console.log("Adresses extraites :", addresses);
+
+      return addresses;
+
+    } catch (err) {
+      console.log("Erreur : " + err);
+    }
+  }
+
   function goToLogin() {
     localStorage.setItem("auth", "true");
     router.push("/");
@@ -30,40 +61,40 @@ export default function Home() {
   return (
     <main className="page">
       <nav>
-      <h1>Arctic Wallet</h1>
-      <p>V0.1</p>
-      <p>A free and easy to use cold wallet.</p>
-      <br />
-      <a href="/">Dashboard</a>
-      <a href="/Crypto">Crypto</a>
-      <a href="/NFT">NFT</a>
-      <a href="/History">History</a>
-      <a href="/Settings">Settings</a>
-    </nav>
+        <h1>Arctic Wallet</h1>
+        <p>V0.1</p>
+        <p>A free and easy to use cold wallet.</p>
+        <br />
+        <a href="/">Dashboard</a>
+        <a href="/Crypto">Crypto</a>
+        <a href="/NFT">NFT</a>
+        <a href="/History">History</a>
+        <a href="/Settings">Settings</a>
+      </nav>
 
-    <header>
-      <h2>ETHBalance ETH</h2>
-      <p>Address</p>
-      <br />
-      <div>
-        <button>Send</button>
-        <button>Swap</button>
-        <button>Receive</button>
-        {/* <button>Buy</button>
-        <button>Stake</button> */}
-      </div>
-    </header>
+      <header>
+        <h2>ETHBalance ETH</h2>
+        <p>Address</p>
+        <br />
+        <div>
+          <button>Send</button>
+          <button>Swap</button>
+          <button>Receive</button>
+          {/* <button>Buy</button>
+          <button>Stake</button> */}
+        </div>
+      </header>
 
-    <section className="content">
-      <h1>Main section</h1>
+      <section className="content">
+        <h1>Main section</h1>
 
-      <ReadTokenList />
+        <ReadTokenList />
 
-      <button>Add Token</button>
+        <UpdateTokenBalance tokens={tokens} userAddress={address} />
 
-      <button onClick={goToLogin}>Go to login</button>
-    </section>
-
+        <button onClick={goToLogin}>Go to login</button>
+        <button onClick={getAddressList}>Get address list</button>
+      </section>
     </main>
   );
 }

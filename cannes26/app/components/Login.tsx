@@ -17,7 +17,6 @@ export default function Login() {
 
   const router = useRouter();
   const [filePath, setFilePath] = useState<string | null>(null);
-  const [tokenList, setTokenList] = useState<TokenData[]>([]);
 
   async function getPath(){
     try {
@@ -34,6 +33,7 @@ export default function Login() {
 
         // Vérifie que le fichier soit au bon format
         setFilePath(filePath);
+        localStorage.setItem("filePath", filePath as string);
         console.log("Chemin du fichier sélectionné : ", filePath);
     } catch (err) {
         console.error('Erreur lors de la sélection du fichier :', err);
@@ -48,8 +48,6 @@ export default function Login() {
 
       const encryptedWallet = JSON.parse(data).wallet as string;
       const decryptedWallet = Wallet.fromEncryptedJsonSync(encryptedWallet, e.target.password.value);
-
-      setTokenList(JSON.parse(data).token);
       
       localStorage.setItem("auth", "true");
       router.push("/dashboard");

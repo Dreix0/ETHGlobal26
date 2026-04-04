@@ -12,15 +12,12 @@ type TokenData = {
 };
 
 export default function ReadTokenList() {
-    const [tokenList, setTokenList] = useState<TokenData[]>([]);
+  const [tokenList, setTokenList] = useState<TokenData[]>([]);
 
   async function readFile() {
 
-    // Remplace ce chemin par un emplacement sur ton disque ou USB
-    const filePath = "C:/Users/quent/Desktop/Test/mon_texte.txt";
-
     try {
-      const data = await invoke("read_text_from_file", {filePath}) as string;
+      const data = await invoke("read_text_from_file", {filePath: localStorage.getItem("filePath")}) as string;
       setTokenList(JSON.parse(data).token);
 
       console.log("Données lues : ", data);

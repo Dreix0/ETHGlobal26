@@ -1,20 +1,28 @@
 import { useState } from "react";
 import { createPublicClient, http, parseAbi, Address } from "viem";
 import { mainnet } from "viem/chains";
+import { invoke } from "@tauri-apps/api/core";
 
 type Props = {
-  tokens: Address[];
   userAddress: Address;
 };
 
-export default function UpdateTokenBalance({ tokens, userAddress }: Props) {
+type TokenData = {
+  name: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  balance: bigint;
+};
+
+export default function UpdateTokenBalance({ userAddress }: Props) {
 
     // Passer publicClient en prop pour éviter de le recréer à chaque composant et pouvoir récupérer l'adresse de l'utilisateur
   const [balances, setBalances] = useState<Record<string, bigint>>({});
 
   const publicClient = createPublicClient({
     chain: mainnet,
-    transport: http(),
+    transport: http("https://eth.llamarpc.com"),
   });
 
   const abi = parseAbi(["function balanceOf(address) view returns (uint256)"]);
@@ -26,8 +34,16 @@ export default function UpdateTokenBalance({ tokens, userAddress }: Props) {
   };
 
   async function updateBalance() {
+    const data = await invoke("read_text_from_file", {filePath: localStorage.getItem("filePath")}) as string;
+    const tokens: TokenData[] = JSON.parse(data).token;
+
+    // Extraction des adresses non vides
+    const addresses = tokens
+      .map((token) => token.address)
+      .filter((address): address is string => !!address && address.trim() !== "");
+
     // Créer un tableau de contrats pour multicall
-    const contracts = tokens.map((token) => ({
+    const contracts = addresses.map((token) => ({
       ...balanceOfFunction,
       address: token
     }));
@@ -35,12 +51,13 @@ export default function UpdateTokenBalance({ tokens, userAddress }: Props) {
     const results = await publicClient.multicall({
       contracts,
     });
+    console.log("Résultats du multicall : ", results);
 
     const newBalances: Record<string, bigint> = {};
 
     results.forEach((res, index) => {
       if (res.status === "success") {
-        newBalances[tokens[index]] = res.result as bigint;
+        newBalances[addresses[index]] = res.result as bigint;
       }
     });
 

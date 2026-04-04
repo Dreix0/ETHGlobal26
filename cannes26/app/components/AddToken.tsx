@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import { createPublicClient, http, Address, parseAbi, formatUnits } from "viem";
 import { mainnet } from "viem/chains";
 import { invoke } from "@tauri-apps/api/core";
@@ -16,17 +13,13 @@ type TokenData = {
 type Props = {
   userAddress: Address;
   tokenAddress: Address;
+  filePath: string;
 };
 
-export default function AddToken({ userAddress, tokenAddress }: Props) {
-  const [data, setData] = useState<TokenData | null>(null);
-  
-  // Remplace ce chemin par un emplacement sur ton disque ou USB
-  const filePath = "C:/Users/quent/Desktop/Test/mon_texte.txt";
-
+export default function AddToken({ userAddress, tokenAddress, filePath }: Props) {
   const publicClient = createPublicClient({ 
     chain: mainnet,
-    transport: http()
+    transport: http("https://eth.llamarpc.com")
   });
 
   const abi = parseAbi([
@@ -39,6 +32,9 @@ export default function AddToken({ userAddress, tokenAddress }: Props) {
   async function handleAddToken() {
 
     try {
+
+      const name = await publicClient.readContract({ address: tokenAddress, abi, functionName: "name" });
+      console.log("Name :", name);
       // ✅ 1. Multicall pour récupérer toutes les données en une seule requête
       const calls = [
         { address: tokenAddress, abi, functionName: "name" as const },
@@ -56,8 +52,6 @@ export default function AddToken({ userAddress, tokenAddress }: Props) {
         decimals: results[2].result as number,
         balance: results[3].result as bigint,
       };
-
-      setData(tokenData);
 
       // 2️⃣ Lire le fichier JSON existant
       const fileContent = await invoke("read_text_from_file", { filePath }) as string;
@@ -90,13 +84,6 @@ export default function AddToken({ userAddress, tokenAddress }: Props) {
       <button onClick={handleAddToken}>
         Add Token
       </button>
-
-      {data && (
-        <div>
-          <h3>{data.name}</h3>
-          <p>{formatUnits(data.balance, data.decimals)} {data.symbol}</p>
-        </div>
-      )}
     </main>
   );
 }

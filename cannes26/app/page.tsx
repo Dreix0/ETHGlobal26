@@ -59,6 +59,7 @@ export default function Home() {
     <main>
       <Login />
       <button onClick={goToDashboard}>Go to dashboard</button>
+      <CreateWallet />
     </main>
   );
 }
