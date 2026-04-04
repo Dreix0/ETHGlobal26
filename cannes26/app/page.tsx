@@ -1,6 +1,9 @@
 "use client";
 
 import { Address } from "viem";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { open } from "@tauri-apps/plugin-dialog";
 
 import CreateWallet from "./components/CreateWallet";
 import ImportWallet from "./components/ImportWallet";
@@ -12,6 +15,10 @@ import ReadTokenList from "./components/ReadTokenList";
 
 export default function Home() {
 
+  const router = useRouter();
+
+  const [filePath, setFilePath] = useState<string | null>(null);
+
   // Exemple d'adresse et de tokens pour les tests
   const address = "0x2CfF890f0378a11913B6129B2E97417a2c302680";
 
@@ -21,58 +28,45 @@ export default function Home() {
     "0xdAC17F958D2ee523a2206206994597C13D831ec7" as Address
   ];
 
+  function goToDashboard() {
+    localStorage.setItem("auth", "true");
+    router.push("/dashboard");
+  }
+
+  async function getPath(){
+  try {
+    const filePath = await open({
+      title: 'Choisir un fichier .plr',
+      multiple: false,
+      filters: [
+        {
+          name: 'PLR Files',
+          extensions: ['plr']
+        }
+      ]
+    });
+
+    setFilePath(filePath);
+    console.log("Chemin du fichier sélectionné : ", filePath);
+
+  } catch (err) {
+    console.error('Erreur lors de la sélection du fichier :', err);
+  }
+  }
+
   return (
-    <main className="page">
-      <nav>
-      <h1>Arctic Wallet</h1>
-      <p>V0.1</p>
-      <p>A free and easy to use cold wallet.</p>
-      <br />
-      <a href="/">Dashboard</a>
-      <a href="/Crypto">Crypto</a>
-      <a href="/NFT">NFT</a>
-      <a href="/History">History</a>
-      <a href="/Settings">Settings</a>
-    </nav>
-
-    <header>
-      <h2>ETHBalance ETH</h2>
-      <p>Address</p>
-      <br />
-      <div>
-        <button>Send</button>
-        <button>Receive</button>
-        <button>Buy</button>
-        <button>Swap</button>
-        <button>Stake</button>
-      </div>
-    </header>
-
-    <section className="content">
-
-      <h1>Main section</h1>
-
-    </section>
-  {/* 
-      <GetTokenData tokens={tokens} userAddress={address} />
-      <UpdateTokenBalance tokens={tokens} userAddress={address} /> */}
-
-      {/* <AddToken userAddress={address} tokenAddress={tokens[0]} />
-      <AddToken userAddress={address} tokenAddress={tokens[1]} />
-      <AddToken userAddress={address} tokenAddress={tokens[2]} /> */}
-
-      {/* <ReadTokenList /> */}
-
-
-      {/* <h1>Create wallet</h1>
+    <main>
+      <h1>Se connecter</h1>
+      <button onClick={getPath}>
+        Sélectionner un fichier .plr
+      </button>
+      <p>{filePath || "Aucun fichier sélectionné"}</p>
+      <ReadTokenList filePath={filePath} />
+      <hr />
       <CreateWallet />
-      <hr />
-      <h1>Import wallet</h1>
       <ImportWallet />
-      <hr />
-      <h1>Read wallet</h1>
-      <ReadWallet /> */}
-
+      <ReadWallet />
+      <button onClick={goToDashboard}>Go to dashboard</button>
     </main>
   );
 }

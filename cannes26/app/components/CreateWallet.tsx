@@ -13,7 +13,7 @@ export default function CreateWallet() {
         e.preventDefault();
 
         // Remplace ce chemin par un emplacement sur ton disque ou USB
-        const filePath = "C:/Users/quent/Desktop/Test/mon_texte.txt";
+        const filePath = "C:/Users/quent/Desktop/Test/wallet.plr";
 
         try{
             const newWallet = Wallet.createRandom(); // Crypter directement le wallet avec le mot de passe de l'utilisateur ?
