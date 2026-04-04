@@ -1,19 +1,13 @@
 import { useState } from "react";
-import { createPublicClient, http, parseAbi, Address } from "viem";
-import { mainnet } from "viem/chains";
+import { parseAbi, Address } from "viem";;
 import { invoke } from "@tauri-apps/api/core";
 
 import { TokenData } from "./../types/TokenData";
+import { publicClient } from "./../clients/publicClient";
 
 export default function UpdateTokenBalance(userAddress: Address) {
-
-    // Passer publicClient en prop pour éviter de le recréer à chaque composant et pouvoir récupérer l'adresse de l'utilisateur
   const [balances, setBalances] = useState<Record<string, bigint>>({});
 
-  const publicClient = createPublicClient({
-    chain: mainnet,
-    transport: http("https://eth.llamarpc.com"),
-  });
 
   const abi = parseAbi(["function balanceOf(address) view returns (uint256)"]);
 

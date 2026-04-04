@@ -1,8 +1,8 @@
-import { createPublicClient, http, Address, parseAbi, formatUnits } from "viem";
-import { mainnet } from "viem/chains";
+import { Address, parseAbi, formatUnits } from "viem";
 import { invoke } from "@tauri-apps/api/core";
 
 import { TokenData } from "./../types/TokenData";
+import { publicClient } from "./../clients/publicClient";
 
 type Props = {
   userAddress: Address;
@@ -11,10 +11,6 @@ type Props = {
 };
 
 export default function AddToken({ userAddress, tokenAddress, filePath }: Props) {
-  const publicClient = createPublicClient({ 
-    chain: mainnet,
-    transport: http("https://eth.llamarpc.com")
-  });
 
   const abi = parseAbi([
     "function name() view returns (string)",

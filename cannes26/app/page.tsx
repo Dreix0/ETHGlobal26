@@ -1,9 +1,7 @@
 "use client";
 
 import { Address } from "viem";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { open } from "@tauri-apps/plugin-dialog";
 
 import CreateWallet from "./components/CreateWallet";
 import ImportWallet from "./components/ImportWallet";
@@ -15,8 +13,6 @@ export default function Home() {
   const [showCreateWallet, setShowCreateWallet] = useState(false);
   const [showImportWallet, setShowImportWallet] = useState(false);
 
-  const router = useRouter();
-
   // Exemple d'adresse et de tokens pour les tests
   const address = "0x2CfF890f0378a11913B6129B2E97417a2c302680";
 
@@ -26,10 +22,6 @@ export default function Home() {
     "0xdAC17F958D2ee523a2206206994597C13D831ec7" as Address
   ];
 
-  function goToDashboard() {
-    localStorage.setItem("auth", "true");
-    router.push("/dashboard");
-  }
 
   function closeCreateWallet() {
     setShowCreateWallet(false);
@@ -44,9 +36,7 @@ export default function Home() {
       <CreateWallet show={showCreateWallet} onClose={closeCreateWallet} />
       <ImportWallet show={showImportWallet} onClose={closeImportWallet} />
       <Login />
-
-      {/* <button onClick={goToDashboard}>Go to dashboard</button>
-      <CreateWallet /> */}
+      <div className="space"></div>
       <div>
         <h1>Sign In</h1>
         <button onClick={() => setShowCreateWallet(true)}>Create Wallet</button>

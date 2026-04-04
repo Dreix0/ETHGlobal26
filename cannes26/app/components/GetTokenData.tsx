@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { createPublicClient, http, Address, parseAbi, formatUnits } from "viem";
-import { mainnet } from "viem/chains";
+import { Address, parseAbi, formatUnits } from "viem";
+
+import { publicClient } from "./../clients/publicClient";
 
 type Props = {
   tokens: Address[];
@@ -11,13 +12,7 @@ import { TokenData } from "./../types/TokenData";
 
 export default function GetTokenData({ tokens, userAddress }: Props)  {
 
-    // Passer publicClient en prop pour éviter de le recréer à chaque composant et pouvoir récupérer l'adresse de l'utilisateur
   const [datas, setDatas] = useState<Record<string, TokenData>>({});
-
-  const publicClient = createPublicClient({ 
-      chain: mainnet,
-      transport: http()
-  });
 
   const abi = parseAbi([
     "function name() view returns (string)",

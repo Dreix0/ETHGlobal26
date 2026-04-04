@@ -33,8 +33,8 @@ export default function Home() {
     "0xdAC17F958D2ee523a2206206994597C13D831ec7" as Address
   ];
 
-  function goToLogin() {
-    localStorage.setItem("auth", "true");
+  function disconnect() {
+    localStorage.removeItem("auth");
     router.push("/");
   }
 
@@ -72,7 +72,7 @@ export default function Home() {
 
         <UpdateTokenBalance userAddress={address} />
 
-        <button onClick={goToLogin}>Go to login</button>
+        <button onClick={disconnect}>Disconnect</button>
       </section>
     </main>
   );

@@ -9,6 +9,10 @@
     color: white;
 }
 
+.loginPage .space{
+    height: 200px;
+}
+
 button{
     padding: 10px;
     margin: 10px;
