@@ -7,18 +7,15 @@ import { open } from "@tauri-apps/plugin-dialog";
 
 import CreateWallet from "./components/CreateWallet";
 import ImportWallet from "./components/ImportWallet";
-import ReadWallet from "./components/ReadWallet";
-import GetTokenData from "./components/GetTokenData";
-import UpdateTokenBalance from "./components/UpdateTokenBalance";
-import AddToken from "./components/AddToken";
-import ReadTokenList from "./components/ReadTokenList";
 import Login from "./components/Login";
 
+import "./styles/login.css";
+
 export default function Home() {
+  const [showCreateWallet, setShowCreateWallet] = useState(false);
+  const [showImportWallet, setShowImportWallet] = useState(false);
 
   const router = useRouter();
-
-  const [filePath, setFilePath] = useState<string | null>(null);
 
   // Exemple d'adresse et de tokens pour les tests
   const address = "0x2CfF890f0378a11913B6129B2E97417a2c302680";
@@ -34,32 +31,27 @@ export default function Home() {
     router.push("/dashboard");
   }
 
-  async function getPath(){
-  try {
-    const filePath = await open({
-      title: 'Choisir un fichier .plr',
-      multiple: false,
-      filters: [
-        {
-          name: 'PLR Files',
-          extensions: ['plr']
-        }
-      ]
-    });
-
-    setFilePath(filePath);
-    console.log("Chemin du fichier sélectionné : ", filePath);
-
-  } catch (err) {
-    console.error('Erreur lors de la sélection du fichier :', err);
+  function closeCreateWallet() {
+    setShowCreateWallet(false);
   }
+
+  function closeImportWallet() {
+    setShowImportWallet(false);
   }
 
   return (
-    <main>
+    <main className="loginPage">
+      <CreateWallet show={showCreateWallet} onClose={closeCreateWallet} />
+      <ImportWallet show={showImportWallet} onClose={closeImportWallet} />
       <Login />
-      <button onClick={goToDashboard}>Go to dashboard</button>
-      <CreateWallet />
+
+      {/* <button onClick={goToDashboard}>Go to dashboard</button>
+      <CreateWallet /> */}
+      <div>
+        <h1>Sign In</h1>
+        <button onClick={() => setShowCreateWallet(true)}>Create Wallet</button>
+        <button onClick={() => setShowImportWallet(true)}>Import Wallet</button>
+      </div>
     </main>
   );
 }

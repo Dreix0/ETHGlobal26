@@ -25,33 +25,13 @@ export default function Home() {
   const savedPath = localStorage.getItem("filePath");
 
   // Exemple d'adresse et de tokens pour les tests
-  const address = "0x2CfF890f0378a11913B6129B2E97417a2c302680";
+  const address = "0x2CfF890f0378a11913B6129B2E97417a2c302680" as Address;
 
   const tokens = [
     "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" as Address,
     "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599" as Address,
     "0xdAC17F958D2ee523a2206206994597C13D831ec7" as Address
   ];
-
-  async function getAddressList() {
-  
-    try {
-      const data = await invoke("read_text_from_file", {filePath: localStorage.getItem("filePath")}) as string;
-      const tokens: TokenData[] = JSON.parse(data).token;
-
-      // Extraction des adresses non vides
-      const addresses = tokens
-        .map((token) => token.address)
-        .filter((address): address is string => !!address && address.trim() !== "");
-
-      console.log("Adresses extraites :", addresses);
-
-      return addresses;
-
-    } catch (err) {
-      console.log("Erreur : " + err);
-    }
-  }
 
   function goToLogin() {
     localStorage.setItem("auth", "true");
@@ -90,10 +70,9 @@ export default function Home() {
 
         <ReadTokenList />
 
-        <UpdateTokenBalance tokens={tokens} userAddress={address} />
+        <UpdateTokenBalance userAddress={address} />
 
         <button onClick={goToLogin}>Go to login</button>
-        <button onClick={getAddressList}>Get address list</button>
       </section>
     </main>
   );

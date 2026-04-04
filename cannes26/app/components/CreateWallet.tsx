@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Wallet, HDNodeWallet } from "ethers";
 import { invoke } from "@tauri-apps/api/core";
 
-export default function CreateWallet() {
+export default function CreateWallet({ show, onClose }: { show: boolean, onClose: () => void }) {
     const [wallet, setWallet] = useState<HDNodeWallet>();
 
     async function newWallet(e : React.FormEvent<HTMLFormElement>) {
@@ -39,20 +39,31 @@ export default function CreateWallet() {
         }
     }
 
-    return (
-    <main>
-        <div>
-            <h3>Saisissez un mot de passe</h3>
-            <form onSubmit={newWallet}>
-                <input type="password" name="password" placeholder='Mot de passe'/>
-                <button type="submit" >Suivant</button>
-            </form>
-        </div>
+    // Fonction pour stopper la propagation du clic à l'overlay
+    const handlePopupClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+    };
 
-        <br />
-        <p>Address: {wallet ? wallet.address : "No wallet generated"}</p>
-        <p>Private Key: {wallet ? wallet.privateKey : "No wallet generated"}</p>
-        <p>Mnemonic: {wallet ? wallet.mnemonic?.phrase : "No wallet generated"}</p>
+    if (!show) return null;
+    return (
+    <main className="overlay" onClick={onClose}>
+        <div className="popup" onClick={handlePopupClick}>
+        <button className="closeBtn" onClick={onClose}>
+          &times;
+        </button>
+            <div>
+                <h3>Saisissez un mot de passe</h3>
+                <form onSubmit={newWallet}>
+                    <input type="password" name="password" placeholder='Mot de passe'/>
+                    <button type="submit" >Suivant</button>
+                </form>
+            </div>
+
+            <br />
+            <p>Address: {wallet ? wallet.address : "No wallet generated"}</p>
+            <p>Private Key: {wallet ? wallet.privateKey : "No wallet generated"}</p>
+            <p>Mnemonic: {wallet ? wallet.mnemonic?.phrase : "No wallet generated"}</p>
+        </div>
     </main>
     );
 }

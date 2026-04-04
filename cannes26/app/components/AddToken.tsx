@@ -2,13 +2,7 @@ import { createPublicClient, http, Address, parseAbi, formatUnits } from "viem";
 import { mainnet } from "viem/chains";
 import { invoke } from "@tauri-apps/api/core";
 
-type TokenData = {
-  name: string;
-  symbol: string;
-  address: string;
-  decimals: number;
-  balance: bigint;
-};
+import { TokenData } from "./../types/TokenData";
 
 type Props = {
   userAddress: Address;

@@ -4,15 +4,6 @@ import { useRouter } from "next/navigation";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Wallet } from "ethers";
 
-
-type TokenData = {
-  name: string;
-  symbol: string;
-  address: string;
-  decimals: number;
-  balance: bigint;
-};
-
 export default function Login() {
 
   const router = useRouter();
@@ -58,16 +49,17 @@ export default function Login() {
 
   return (
     <main>
-        <button onClick={getPath}>
-            Sélectionner un fichier .plr
-        </button> 
+      <h1>Login</h1>
+      <button onClick={getPath}>
+          Select your wallet
+      </button> 
 
-        {filePath && 
-            <form onSubmit={readFile}>
-                <input type="password" name="password" placeholder='Mot de passe'/>
-                <button type="submit" >Suivant</button>
-            </form>
-        }
+      {filePath && 
+          <form onSubmit={readFile}>
+              <input type="password" name="password" placeholder='Mot de passe'/>
+              <button type="submit" >Suivant</button>
+          </form>
+      }
     </main>
   );
 }

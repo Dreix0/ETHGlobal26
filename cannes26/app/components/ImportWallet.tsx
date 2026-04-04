@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Wallet, HDNodeWallet } from "ethers";
 import { invoke } from "@tauri-apps/api/core";
 
-export default function ImportWallet() {
+export default function ImportWallet({ show, onClose }: { show: boolean, onClose: () => void }) {
     const [wallet, setWallet] = useState<HDNodeWallet>();
     const [Mnemonic, setMnemonic] = useState<string>(""); // Variable qui stocke la seed phrase entré par l'utilisateur
     
@@ -47,8 +47,18 @@ export default function ImportWallet() {
         }
     }
 
+    // Fonction pour stopper la propagation du clic à l'overlay
+    const handlePopupClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+    };
+
+    if (!show) return null;
     return (
-    <main>
+    <main className="overlay" onClick={onClose}>
+        <div className="popup" onClick={handlePopupClick}>
+        <button className="closeBtn" onClick={onClose}>
+          &times;
+        </button>
             <div>
                 <div>
                     <h3>Saisissez votre phrase de récupération</h3>
@@ -66,12 +76,13 @@ export default function ImportWallet() {
                     </form>
                 </div>
             </div>
-            
+                
 
-        <br />
-        <p>Address: {wallet ? wallet.address : "No wallet generated"}</p>
-        <p>Private Key: {wallet ? wallet.privateKey : "No wallet generated"}</p>
-        <p>Mnemonic: {wallet ? wallet.mnemonic?.phrase : "No wallet generated"}</p>
+            <br />
+            <p>Address: {wallet ? wallet.address : "No wallet generated"}</p>
+            <p>Private Key: {wallet ? wallet.privateKey : "No wallet generated"}</p>
+            <p>Mnemonic: {wallet ? wallet.mnemonic?.phrase : "No wallet generated"}</p>
+        </div>
     </main>
     );
 }

@@ -2,14 +2,7 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { formatUnits } from "viem";
 
-
-type TokenData = {
-  name: string;
-  symbol: string;
-  address: string;
-  decimals: number;
-  balance: bigint;
-};
+import { TokenData } from "./../types/TokenData";
 
 export default function ReadTokenList() {
   const [tokenList, setTokenList] = useState<TokenData[]>([]);

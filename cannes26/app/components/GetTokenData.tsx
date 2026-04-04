@@ -7,13 +7,7 @@ type Props = {
   userAddress: Address;
 };
 
-type TokenData = {
-  name: string;
-  symbol: string;
-  address: string;
-  decimals: number;
-  balance: bigint;
-};
+import { TokenData } from "./../types/TokenData";
 
 export default function GetTokenData({ tokens, userAddress }: Props)  {
 

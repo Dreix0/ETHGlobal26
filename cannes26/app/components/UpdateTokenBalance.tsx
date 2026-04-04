@@ -3,19 +3,9 @@ import { createPublicClient, http, parseAbi, Address } from "viem";
 import { mainnet } from "viem/chains";
 import { invoke } from "@tauri-apps/api/core";
 
-type Props = {
-  userAddress: Address;
-};
+import { TokenData } from "./../types/TokenData";
 
-type TokenData = {
-  name: string;
-  symbol: string;
-  address: string;
-  decimals: number;
-  balance: bigint;
-};
-
-export default function UpdateTokenBalance({ userAddress }: Props) {
+export default function UpdateTokenBalance(userAddress: Address) {
 
     // Passer publicClient en prop pour éviter de le recréer à chaque composant et pouvoir récupérer l'adresse de l'utilisateur
   const [balances, setBalances] = useState<Record<string, bigint>>({});
@@ -92,14 +82,6 @@ export default function UpdateTokenBalance({ userAddress }: Props) {
       <button onClick={updateBalance}>
         Update balances
       </button>
-
-      <ul>
-        {Object.entries(balances).map(([token, balance]) => (
-          <li key={token}>
-            {token} : {balance.toString()}
-          </li>
-        ))}
-      </ul>
     </main>
   );
 }
