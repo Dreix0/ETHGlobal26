@@ -5,7 +5,7 @@ body {
 .page {
     display: grid;
     grid-template-columns: 250px 1fr;
-    grid-template-rows: 250px 1fr;
+    grid-template-rows: 150px 1fr;
     height: 100vh;
     text-align: center;
 }
@@ -31,7 +31,7 @@ nav {
     color: white;
 }
 
-nav a {
+nav button {
     text-decoration: none;
     padding: 10px;
     margin: 10px;
@@ -56,17 +56,13 @@ header {
     color: white;
 }
 
-header div {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    margin: 0 5vw;
+header h2 {
+    font-size: 2.5rem;
+    margin: 10px;
 }
 
-header button {
-    background-color: white;
-    color: #3b82f6;
-    min-width: 100px;
+header * {
+    margin: 0;
 }
 
 /* CONTENU principal */
@@ -76,4 +72,22 @@ header button {
 
     padding: 20px;
     background-color: #f3f4f6;
+}
+
+.tokenList {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 30px;
+    text-align: left;
+}
+
+.tokenList h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.tokenList p {
+    margin: 5px 0 0 0;
+    color: #555;
 }

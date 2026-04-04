@@ -88,7 +88,7 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
 
                         const encryptedWallet = await newWallet.encrypt(password);
                         const content: string = JSON.stringify({
-                            token: [{ name: "Ethereum", symbol: "ETH", address: "", decimals: 18, balance: "0" }],
+                            token: [{ name: "Ethereum", symbol: "ETH", address: "0x0000000000000000000000000000000000000000", decimals: 18, balance: "0" }],
                             wallet: encryptedWallet,
                         });
 

@@ -9,16 +9,15 @@ import { TokenData } from "./../types/TokenData";
 
 export default function ReadTokenList() {
   const [tokenList, setTokenList] = useState<TokenData[]>([]);
+  const [walletAddress, setWalletAddress] = useState<string>("");
 
   async function readFile() {
 
     try {
       const data = await invoke("read_text_from_file", {filePath: localStorage.getItem("filePath")}) as string;
-      setTokenList(JSON.parse(data).token);
-
-      console.log("Données lues : ", data);
-      console.log("Token list : ", tokenList);
-
+      const json = JSON.parse(data);
+      setTokenList(json.token);
+      setWalletAddress("0x" + JSON.parse(json.wallet).address);
     } catch (err) {
       console.log("Erreur : " + err);
     }
@@ -27,6 +26,8 @@ export default function ReadTokenList() {
   return (
     <main>
         <button onClick={readFile}>Lire la liste de tokens</button>
+
+        {walletAddress && <p>Adresse du wallet : {walletAddress}</p>}
 
         {Object.entries(tokenList).map(([token, data]) => (
             <div key={token}>

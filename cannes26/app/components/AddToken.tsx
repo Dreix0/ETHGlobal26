@@ -1,15 +1,24 @@
 import { Address, parseAbi } from "viem";
 import { invoke } from "@tauri-apps/api/core";
+import { useState } from "react";
 
 import { TokenData } from "./../types/TokenData";
 import { publicClient } from "./../clients/publicClient";
 
+import "./../styles/login.css";
+
 type Props = {
   userAddress: Address;
-  tokenAddress: Address;
+  onTokenAdded: () => Promise<void>
+  onClose: () => void
+  show: boolean;
 };
 
-export default function AddToken({ userAddress, tokenAddress }: Props) {
+// Regrouper onTokenAdded et onClose dans une seule fonction pour simplifier la gestion de l'état dans le composant parent (Dashboard)
+
+export default function AddToken({ userAddress, onTokenAdded, show, onClose }: Props) {
+
+  const [tokenInput, setTokenInput] = useState("");
 
   const abi = parseAbi([
     "function name() view returns (string)",
@@ -19,6 +28,8 @@ export default function AddToken({ userAddress, tokenAddress }: Props) {
   ]);
 
   async function handleAddToken() {
+
+    const tokenAddress = tokenInput as Address;
 
     try {
       const calls = [
@@ -55,17 +66,40 @@ export default function AddToken({ userAddress, tokenAddress }: Props) {
 
       await invoke("write_text_to_file", { filePath: localStorage.getItem("filePath"), content: JSON.stringify(json, null, 2) });
 
+      await onTokenAdded();
+
     } catch (err: any) {
       console.error(err);
       console.log("Erreur lors de l'ajout du token : " + err.message);
     }
   }
 
+    const handlePopupClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+    };
+
+  
+  if (!show) return null;
   return (
-    <main>
-      <button onClick={handleAddToken}>
-        Add Token
-      </button>
+    <main className="overlay" onClick={onClose}>
+        <div className="popup" onClick={handlePopupClick}>
+            <button className="closeBtn" onClick={onClose}>
+            &times;
+            </button>
+
+            <div className="slideContent">
+              <input
+                type="text"
+                placeholder="Adresse du token ERC20"
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                style={{ width: "400px", padding: "8px", marginRight: "8px" }}
+              />
+              <button onClick={handleAddToken}>
+                Add Token
+              </button>
+            </div>
+      </div>
     </main>
   );
 }

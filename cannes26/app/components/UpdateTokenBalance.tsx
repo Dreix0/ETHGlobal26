@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { parseAbi, Address } from "viem";;
 import { invoke } from "@tauri-apps/api/core";
 
@@ -6,9 +5,6 @@ import { TokenData } from "./../types/TokenData";
 import { publicClient } from "./../clients/publicClient";
 
 export default function UpdateTokenBalance(userAddress: Address) {
-  const [balances, setBalances] = useState<Record<string, bigint>>({});
-
-
   const abi = parseAbi(["function balanceOf(address) view returns (uint256)"]);
 
   const balanceOfFunction = {
@@ -18,17 +14,23 @@ export default function UpdateTokenBalance(userAddress: Address) {
   };
 
   async function updateBalance() {
+
     const data = await invoke("read_text_from_file", {filePath: localStorage.getItem("filePath")}) as string;
     const json = JSON.parse(data);
     const tokens: TokenData[] = json.token;
 
-    const addresses = tokens
-      .map((token) => token.address)
-      .filter((address): address is string => !!address && address.trim() !== "");
+    // Tri des tokens en séparant les ERC20 et les natifs
+    const erc20Tokens = tokens.filter(
+      (t) => t.address && t.address !== "0x0000000000000000000000000000000000000000"
+    );
 
-    const contracts = addresses.map((token) => ({
+    const nativeTokens = tokens.filter(
+      (t) => t.address === "0x0000000000000000000000000000000000000000"
+    );
+
+    const contracts = erc20Tokens.map((token) => ({
       ...balanceOfFunction,
-      address: token
+      address: token.address as Address,
     }));
 
     const results = await publicClient.multicall({
@@ -36,19 +38,36 @@ export default function UpdateTokenBalance(userAddress: Address) {
     });
     console.log("Résultats du multicall : ", results);
 
-    const newBalances: Record<string, bigint> = {};
+    // Récupération des balances des tokens ERC20
+    let erc20Balances: Record<string, bigint> = {};
 
     results.forEach((res, index) => {
       if (res.status === "success") {
-        newBalances[addresses[index]] = res.result as bigint;
+        erc20Balances[erc20Tokens[index].address] = res.result as bigint;
       }
     });
 
+    // Récupération de la balance du token natif (ETH)
+    let nativeBalance: bigint | null = null;
+
+    if (nativeTokens.length > 0) {
+      nativeBalance = await publicClient.getBalance({
+        address: userAddress,
+      });
+    }
+
     const updatedTokens = tokens.map((token) => {
-      if (token.address && newBalances[token.address]) {
+      if (token.address && erc20Balances[token.address]) {
         return {
           ...token,
-          balance: newBalances[token.address].toString() // bigint → string pour JSON,
+          balance: erc20Balances[token.address].toString(),
+        };
+      }
+
+      if (token.address === "0x0000000000000000000000000000000000000000" && nativeBalance !== null) {
+        return {
+          ...token,
+          balance: nativeBalance.toString(),
         };
       }
       return token;
@@ -63,8 +82,6 @@ export default function UpdateTokenBalance(userAddress: Address) {
       filePath: localStorage.getItem("filePath")!,
       content: JSON.stringify(updatedJson, null, 2),
     });
-
-    setBalances(newBalances);
   }
 
   return (
