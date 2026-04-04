@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import ReadTokenList from "../components/ReadTokenList";
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { formatUnits } from "viem";
