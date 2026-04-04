@@ -116,7 +116,6 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
 
     const slides = [SlideFolder, SlideMnemonic, SlidePassword];
 
-    // Fonction pour stopper la propagation du clic à l'overlay
     const handlePopupClick = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
     };
@@ -125,37 +124,13 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
     return (
     <main className="overlay" onClick={onClose}>
         <div className="popup" onClick={handlePopupClick}>
-        <button className="closeBtn" onClick={onClose}>
-          &times;
-        </button>
+            <button className="closeBtn" onClick={onClose}>
+            &times;
+            </button>
 
-        <div className="slideContent">
-          {slides[currentSlide]}
-        </div>
-
-            {/* <div>
-                <div>
-                    <h3>Saisissez votre phrase de récupération</h3>
-                    <form onSubmit={SubmitMnemonic}>
-                        <textarea name="seedphrase" placeholder='Phrase de récupération'></textarea>
-                        <button type="submit">Terminer</button>
-                    </form>
-                </div>
-
-                <div>
-                    <h3>Saisissez un mot de passe</h3>
-                    <form onSubmit={newWallet}>
-                        <input type="password" name="password" placeholder='Mot de passe'/>
-                        <button type="submit" >Suivant</button>
-                    </form>
-                </div>
+            <div className="slideContent">
+            {slides[currentSlide]}
             </div>
-                
-
-            <br />
-            <p>Address: {wallet ? wallet.address : "No wallet generated"}</p>
-            <p>Private Key: {wallet ? wallet.privateKey : "No wallet generated"}</p>
-            <p>Mnemonic: {wallet ? wallet.mnemonic?.phrase : "No wallet generated"}</p> */}
         </div>
     </main>
     );

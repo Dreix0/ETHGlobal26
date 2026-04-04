@@ -102,7 +102,6 @@ export default function CreateWallet({ show, onClose }: { show: boolean, onClose
 
     const slides = [SlideFolder, SlidePassword, SlideMnemonic];
 
-    // Fonction pour stopper la propagation du clic à l'overlay
     const handlePopupClick = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
     };

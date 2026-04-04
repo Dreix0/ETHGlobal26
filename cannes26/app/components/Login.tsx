@@ -22,7 +22,6 @@ export default function Login() {
         ]
         });
 
-        // Vérifie que le fichier soit au bon format
         setFilePath(filePath);
         localStorage.setItem("filePath", filePath as string);
         console.log("Chemin du fichier sélectionné : ", filePath);

@@ -8,9 +8,5 @@ if (!isAuth && request.nextUrl.pathname !== "/") {
 return NextResponse.redirect(new URL("/", request.url));
 }
 
-// if (isAuth && request.nextUrl.pathname === "/login") {
-// return NextResponse.redirect(new URL("/", request.url));
-// }
-
 return NextResponse.next();
 }

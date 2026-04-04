@@ -22,12 +22,10 @@ export default function UpdateTokenBalance(userAddress: Address) {
     const json = JSON.parse(data);
     const tokens: TokenData[] = json.token;
 
-    // Extraction des adresses non vides
     const addresses = tokens
       .map((token) => token.address)
       .filter((address): address is string => !!address && address.trim() !== "");
 
-    // Créer un tableau de contrats pour multicall
     const contracts = addresses.map((token) => ({
       ...balanceOfFunction,
       address: token
@@ -46,7 +44,6 @@ export default function UpdateTokenBalance(userAddress: Address) {
       }
     });
 
-    // 🔥 Mise à jour des tokens
     const updatedTokens = tokens.map((token) => {
       if (token.address && newBalances[token.address]) {
         return {
@@ -57,7 +54,6 @@ export default function UpdateTokenBalance(userAddress: Address) {
       return token;
     });
 
-    // 🔥 Réécriture du fichier
     const updatedJson = {
       ...json,
       token: updatedTokens,

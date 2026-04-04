@@ -1,4 +1,4 @@
-import { Address, parseAbi, formatUnits } from "viem";
+import { Address, parseAbi } from "viem";
 import { invoke } from "@tauri-apps/api/core";
 
 import { TokenData } from "./../types/TokenData";
@@ -7,10 +7,9 @@ import { publicClient } from "./../clients/publicClient";
 type Props = {
   userAddress: Address;
   tokenAddress: Address;
-  filePath: string;
 };
 
-export default function AddToken({ userAddress, tokenAddress, filePath }: Props) {
+export default function AddToken({ userAddress, tokenAddress }: Props) {
 
   const abi = parseAbi([
     "function name() view returns (string)",
@@ -22,10 +21,6 @@ export default function AddToken({ userAddress, tokenAddress, filePath }: Props)
   async function handleAddToken() {
 
     try {
-
-      const name = await publicClient.readContract({ address: tokenAddress, abi, functionName: "name" });
-      console.log("Name :", name);
-      // ✅ 1. Multicall pour récupérer toutes les données en une seule requête
       const calls = [
         { address: tokenAddress, abi, functionName: "name" as const },
         { address: tokenAddress, abi, functionName: "symbol" as const },
@@ -43,11 +38,9 @@ export default function AddToken({ userAddress, tokenAddress, filePath }: Props)
         balance: results[3].result as bigint,
       };
 
-      // 2️⃣ Lire le fichier JSON existant
-      const fileContent = await invoke("read_text_from_file", { filePath }) as string;
+      const fileContent = await invoke("read_text_from_file", { filePath: localStorage.getItem("filePath") }) as string;
       const json = JSON.parse(fileContent);
 
-      // 3️⃣ Ajouter le token à la liste, en créant le tableau si nécessaire
       if (!Array.isArray(json.token)) {
         json.token = [];
       }
@@ -57,11 +50,10 @@ export default function AddToken({ userAddress, tokenAddress, filePath }: Props)
         symbol: tokenData.symbol,
         address: tokenData.address,
         decimals: tokenData.decimals,
-        balance: tokenData.balance.toString() // bigint → string pour JSON
+        balance: tokenData.balance.toString()
       });
 
-      // 4️⃣ Réécrire le fichier
-      await invoke("write_text_to_file", { filePath, content: JSON.stringify(json, null, 2) });
+      await invoke("write_text_to_file", { filePath: localStorage.getItem("filePath"), content: JSON.stringify(json, null, 2) });
 
     } catch (err: any) {
       console.error(err);
