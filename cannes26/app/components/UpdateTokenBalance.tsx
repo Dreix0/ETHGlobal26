@@ -35,7 +35,8 @@ export default function UpdateTokenBalance({ userAddress }: Props) {
 
   async function updateBalance() {
     const data = await invoke("read_text_from_file", {filePath: localStorage.getItem("filePath")}) as string;
-    const tokens: TokenData[] = JSON.parse(data).token;
+    const json = JSON.parse(data);
+    const tokens: TokenData[] = json.token;
 
     // Extraction des adresses non vides
     const addresses = tokens
@@ -59,6 +60,28 @@ export default function UpdateTokenBalance({ userAddress }: Props) {
       if (res.status === "success") {
         newBalances[addresses[index]] = res.result as bigint;
       }
+    });
+
+    // 🔥 Mise à jour des tokens
+    const updatedTokens = tokens.map((token) => {
+      if (token.address && newBalances[token.address]) {
+        return {
+          ...token,
+          balance: newBalances[token.address].toString() // bigint → string pour JSON,
+        };
+      }
+      return token;
+    });
+
+    // 🔥 Réécriture du fichier
+    const updatedJson = {
+      ...json,
+      token: updatedTokens,
+    };
+
+    await invoke("write_text_to_file", {
+      filePath: localStorage.getItem("filePath")!,
+      content: JSON.stringify(updatedJson, null, 2),
     });
 
     setBalances(newBalances);
