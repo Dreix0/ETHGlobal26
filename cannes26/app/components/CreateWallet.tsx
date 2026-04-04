@@ -20,7 +20,12 @@ export default function CreateWallet() {
             setWallet(newWallet);
             const encryptedWallet = await newWallet.encrypt(e.currentTarget.password.value);
             const content : string = JSON.stringify({
-                token: [],
+                token: [{
+                    "name": "Ethereum",
+                    "symbol": "ETH",
+                    "decimals": 18,
+                    "balance": "0"
+                }],
                 wallet: encryptedWallet
             });
 

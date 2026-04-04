@@ -1,6 +1,5 @@
 "use client";
 
-import styles from "./styles/page.module.css";
 import { Address } from "viem";
 
 import CreateWallet from "./components/CreateWallet";
@@ -23,29 +22,57 @@ export default function Home() {
   ];
 
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-{/* 
-        <GetTokenData tokens={tokens} userAddress={address} />
-        <UpdateTokenBalance tokens={tokens} userAddress={address} /> */}
+    <main className="page">
+      <nav>
+      <h1>Arctic Wallet</h1>
+      <p>V0.1</p>
+      <p>A free and easy to use cold wallet.</p>
+      <br />
+      <a href="/">Dashboard</a>
+      <a href="/Crypto">Crypto</a>
+      <a href="/NFT">NFT</a>
+      <a href="/History">History</a>
+      <a href="/Settings">Settings</a>
+    </nav>
 
-        {/* <AddToken userAddress={address} tokenAddress={tokens[0]} />
-        <AddToken userAddress={address} tokenAddress={tokens[1]} />
-        <AddToken userAddress={address} tokenAddress={tokens[2]} /> */}
+    <header>
+      <h2>ETHBalance ETH</h2>
+      <p>Address</p>
+      <br />
+      <div>
+        <button>Send</button>
+        <button>Receive</button>
+        <button>Buy</button>
+        <button>Swap</button>
+        <button>Stake</button>
+      </div>
+    </header>
 
-        <ReadTokenList />
+    <section className="content">
+
+      <h1>Main section</h1>
+
+    </section>
+  {/* 
+      <GetTokenData tokens={tokens} userAddress={address} />
+      <UpdateTokenBalance tokens={tokens} userAddress={address} /> */}
+
+      {/* <AddToken userAddress={address} tokenAddress={tokens[0]} />
+      <AddToken userAddress={address} tokenAddress={tokens[1]} />
+      <AddToken userAddress={address} tokenAddress={tokens[2]} /> */}
+
+      {/* <ReadTokenList /> */}
 
 
-        {/* <h1>Create wallet</h1>
-        <CreateWallet />
-        <hr />
-        <h1>Import wallet</h1>
-        <ImportWallet />
-        <hr />
-        <h1>Read wallet</h1>
-        <ReadWallet /> */}
+      {/* <h1>Create wallet</h1>
+      <CreateWallet />
+      <hr />
+      <h1>Import wallet</h1>
+      <ImportWallet />
+      <hr />
+      <h1>Read wallet</h1>
+      <ReadWallet /> */}
 
-      </main>
-    </div>
+    </main>
   );
 }
