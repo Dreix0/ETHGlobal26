@@ -70,7 +70,7 @@ export default function AddToken({ userAddress, onTokenAdded, show, onClose }: P
 
     } catch (err: any) {
       console.error(err);
-      console.log("Erreur lors de l'ajout du token : " + err.message);
+      console.log("Error adding token: " + err.message);
     }
   }
 

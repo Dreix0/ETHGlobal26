@@ -57,9 +57,9 @@ export default function Home() {
       setTokenList(json.token);
       setWalletAddress("0x" + JSON.parse(json.wallet).address);
       setWallet(json.wallet);
-      console.log("Wallet loaded from file : ", json.wallet);
+      console.log("Wallet loaded from file: ", json.wallet);
     } catch (err) {
-      console.log("Erreur : " + err);
+      console.log("Error: " + err);
     }
   }
 
@@ -76,27 +76,27 @@ async function sendEth(to: string, amountInEth: string) {
     console.log(walletClient);
 
     try {
-      // Convert ETH en wei
+      // Convert ETH to wei
       const value = BigInt(parseFloat(amountInEth) * 1e18)
 
-      // Crée la transaction
+      // Create the transaction
       const txHash = await walletClient.sendTransaction({
         to: to as `0x${string}`,
         value,
       })
 
-      console.log('Transaction envoyée, hash :', txHash)
+      console.log('Transaction sent, hash:', txHash)
 
       return txHash
     } catch (error) {
-      console.error('Erreur lors de l\'envoi de ETH:', error)
+      console.error('Error sending ETH:', error)
       throw error
     }
   }
 
 
 // -------------------------------------------------------------------------------------------------------
-// ABI minimale ERC20
+// Minimal ERC20 ABI
 const erc20Abi = [
   {
     name: 'transfer',
@@ -132,7 +132,7 @@ async function sendERC20({tokenAddress, to, amount, decimals = 18}: {tokenAddres
       args: [to, value],
     })
 
-    console.log('Transaction ERC20 envoyée, hash :', hash)
+    console.log('ERC20 transaction sent, hash:', hash)
 
     // 👇 attendre confirmation
     const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -142,7 +142,7 @@ async function sendERC20({tokenAddress, to, amount, decimals = 18}: {tokenAddres
       status: receipt.status,
     }
   } catch (error) {
-    console.error('Erreur envoi ERC20:', error)
+    console.error('ERC20 send error:', error)
     throw error
   }
 }

@@ -20,14 +20,14 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
             <button
                 onClick={async () => {
                     const path = await open({ title: "Choisir un dossier", multiple: false, directory: true });
-                    console.log("Dossier sélectionné : ", path);
+                    console.log("Selected folder: ", path);
                     if (path) {
                         setFolderPath(path as string);
                         setCurrentSlide(1);
                     }
                 }}
             >
-                Sélectionner un dossier
+                Select a folder
             </button>
         </div>
     );
@@ -60,15 +60,15 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
         </div>
     );
 
-    // --- Slide 3 : Saisie du mot de passe et création du wallet ---
+    // --- Slide 3: Enter password and create wallet ---
     const SlidePassword = (
         <div>
-            <h2>Étape 3 : Définir un mot de passe</h2>
+            <h2>Step 3: Set a password</h2>
             <form
                 onSubmit={async (e) => {
                     e.preventDefault();
                     if (!folderPath) {
-                        alert("Veuillez sélectionner un dossier");
+                        alert("Please select a folder");
                         setCurrentSlide(0);
                         return;
                     }
@@ -78,7 +78,7 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
                         return;
                     }
                     if (!password) {
-                        alert("Veuillez entrer un mot de passe");
+                        alert("Please enter a password");
                         return;
                     }
 
@@ -97,8 +97,8 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
 
                         router.push("/dashboard");
                     } catch (err) {
-                        console.error("Erreur : ", err);
-                        alert("Erreur lors de l'importation du wallet");
+                        console.error("Error: ", err);
+                        alert("Error importing wallet");
                     }
                 }}
             >
@@ -106,7 +106,7 @@ export default function ImportWallet({ show, onClose }: { show: boolean, onClose
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mot de passe"
+                    placeholder="Password"
                     required
                 />
                 <button type="submit">Terminer</button>

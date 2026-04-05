@@ -7,34 +7,30 @@ import { createWalletClient, createPublicClient, http, parseUnits } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { mainnet } from 'viem/chains'
 
-interface Token {
-  symbol: string
-  address: string
-  decimals: number
-}
+const RPC_URLS = [
+  'https://ethereum.publicnode.com',
+]
 
-const RPC_URLS = ['https://ethereum.publicnode.com']
-
-const TOKENS: Token[] = [
+const TOKENS = [
   { symbol: 'ETH', address: '0x0000000000000000000000000000000000000000', decimals: 18 },
   { symbol: 'USDT', address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6 },
 ]
 
-function getPublicClient() {
+function getPublicClient(rpcUrl: string) {
   return createPublicClient({
     chain: mainnet,
-    transport: http('https://ethereum.publicnode.com'),
+    transport: http(rpcUrl),
   })
 }
 
-export function Swap({ show, onClose }: { show: boolean; onClose: () => void }) {
+const Swap = () => {
   const [tokenIn, setTokenIn] = useState(TOKENS[0].address)
   const [tokenOut, setTokenOut] = useState(TOKENS[1].address)
   const [amount, setAmount] = useState('0.001')
   const [loading, setLoading] = useState(false)
   const [quoteData, setQuoteData] = useState<any>(null)
   const [quoteInfo, setQuoteInfo] = useState<any>(null)
-  const [slippage, setSlippage] = useState(0.5)
+  const [slippage, setSlippage] = useState(0.5) // Slippage en %
 
   async function fetchQuote() {
     if (!amount || parseFloat(amount) <= 0) return
@@ -52,8 +48,13 @@ export function Swap({ show, onClose }: { show: boolean; onClose: () => void }) 
       const tokenInObj = TOKENS.find(t => t.address === tokenIn)!
       const tokenOutObj = TOKENS.find(t => t.address === tokenOut)!
 
-      const res = await fetch('/api/quote', {
+      const res = await fetch('https://trade-api.gateway.uniswap.org/v1/quote', {
         method: 'POST',
+        headers: {
+          'x-universal-router-version': '2.0',
+          'x-api-key': process.env.NEXT_PUBLIC_UNISWAP_API_KEY || '',
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           swapper: decryptedWallet.address,
           tokenInChainId: 1,
@@ -63,7 +64,7 @@ export function Swap({ show, onClose }: { show: boolean; onClose: () => void }) 
           amount: parseUnits(amount, tokenInObj.decimals).toString(),
           type: 'EXACT_INPUT',
           slippage: slippage,
-          generatePermitAsTransaction: tokenIn !== TOKENS[0].address,
+          generatePermitAsTransaction: tokenIn !== TOKENS[0].address, // ETH n'a pas besoin de permit
         }),
       }).then(r => r.json())
 
@@ -100,10 +101,10 @@ export function Swap({ show, onClose }: { show: boolean; onClose: () => void }) 
         account: privateKeyToAccount(decryptedWallet.privateKey as `0x${string}`),
       })
 
-      let nonce = 0
+      let nonce: number = 0
       for (let url of RPC_URLS) {
         try {
-          const client = getPublicClient()
+          const client = getPublicClient(url)
           nonce = await client.getTransactionCount({ address: decryptedWallet.address as `0x${string}`, blockTag: 'pending' })
           break
         } catch (err) {
@@ -113,14 +114,20 @@ export function Swap({ show, onClose }: { show: boolean; onClose: () => void }) 
 
       const body: any = { quote: quoteData.quote }
 
+      // Inclure permitData uniquement si signature présente
       if (quoteData.permitData && quoteData.permitData.signature) {
         body.permitData = quoteData.permitData
       }
 
-      body.deadline = Math.floor(Date.now() / 1000) + 300
+      // Ajouter deadline pour éviter l’expiration
+      body.deadline = Math.floor(Date.now() / 1000) + 300 // 5 min
 
-      const swapRes = await fetch('/api/swap', {
+      const swapRes = await fetch('https://trade-api.gateway.uniswap.org/v1/swap', {
         method: 'POST',
+        headers: {
+          'x-api-key': process.env.NEXT_PUBLIC_UNISWAP_API_KEY || '',
+          'content-type': 'application/json',
+        },
         body: JSON.stringify(body),
       }).then(r => r.json())
       console.log('Swap response:', swapRes)
@@ -154,63 +161,54 @@ export function Swap({ show, onClose }: { show: boolean; onClose: () => void }) 
     }
   }
 
-    const handlePopupClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation();
-    };
-
-    if (!show) return null;
-
   return (
-    <main className="overlay" onClick={onClose}>
-        <div style={{ padding: 20, maxWidth: 500 }} className="popup" onClick={handlePopupClick}>
-                <button className="closeBtn" onClick={onClose}>
-                &times;
-                </button>
-        <h2>Swap Mainnet</h2>
+    <div style={{ padding: 20, maxWidth: 500 }}>
+      <h2>Swap Mainnet</h2>
 
-        <div style={{ marginBottom: 10 }}>
-            <label>Token d'entrée :</label>
-            <select value={tokenIn} onChange={e => setTokenIn(e.target.value)}>
-            {TOKENS.map(t => <option key={t.address} value={t.address}>{t.symbol}</option>)}
-            </select>
-        </div>
+      <div style={{ marginBottom: 10 }}>
+        <label>Token d'entrée :</label>
+        <select value={tokenIn} onChange={e => setTokenIn(e.target.value)}>
+          {TOKENS.map(t => <option key={t.address} value={t.address}>{t.symbol}</option>)}
+        </select>
+      </div>
 
-        <div style={{ marginBottom: 10 }}>
-            <label>Token de sortie :</label>
-            <select value={tokenOut} onChange={e => setTokenOut(e.target.value)}>
-            {TOKENS.map(t => <option key={t.address} value={t.address}>{t.symbol}</option>)}
-            </select>
-        </div>
+      <div style={{ marginBottom: 10 }}>
+        <label>Token de sortie :</label>
+        <select value={tokenOut} onChange={e => setTokenOut(e.target.value)}>
+          {TOKENS.map(t => <option key={t.address} value={t.address}>{t.symbol}</option>)}
+        </select>
+      </div>
 
-        <div style={{ marginBottom: 10 }}>
-            <label>Montant :</label>
-            <input type="number" value={amount} onChange={e => setAmount(e.target.value)} step="any" />
-        </div>
+      <div style={{ marginBottom: 10 }}>
+        <label>Montant :</label>
+        <input type="number" value={amount} onChange={e => setAmount(e.target.value)} step="any" />
+      </div>
 
-        <div style={{ marginBottom: 10 }}>
-            <label>Slippage (%):</label>
-            <input type="number" value={slippage} onChange={e => setSlippage(parseFloat(e.target.value))} step="0.1" />
-        </div>
+      <div style={{ marginBottom: 10 }}>
+        <label>Slippage (%):</label>
+        <input type="number" value={slippage} onChange={e => setSlippage(parseFloat(e.target.value))} step="0.1" />
+      </div>
 
-        <div style={{ marginBottom: 10 }}>
-            <button onClick={fetchQuote} disabled={loading}>
-            {loading ? 'Chargement...' : 'Obtenir quote'}
-            </button>
-        </div>
-
-        {quoteInfo && (
-            <div style={{ marginBottom: 10, border: '1px solid #ccc', padding: 10 }}>
-            <p><strong>Montant reçu estimé :</strong> {quoteInfo.amountOut.toFixed(6)} {TOKENS.find(t => t.address === tokenOut)?.symbol}</p>
-            <p><strong>Prix moyen :</strong> {quoteInfo.price.toFixed(6)}</p>
-            <p><strong>Slippage :</strong> {quoteInfo.slippage}%</p>
-            <p><strong>Frais gas estimés :</strong> ${quoteInfo.gasUSD}</p>
-            </div>
-        )}
-
-        <button onClick={handleSwap} disabled={loading || !quoteData}>
-            {loading ? 'Processing...' : 'Swap maintenant'}
+      <div style={{ marginBottom: 10 }}>
+        <button onClick={fetchQuote} disabled={loading}>
+          {loading ? 'Chargement...' : 'Obtenir quote'}
         </button>
+      </div>
+
+      {quoteInfo && (
+        <div style={{ marginBottom: 10, border: '1px solid #ccc', padding: 10 }}>
+          <p><strong>Montant reçu estimé :</strong> {quoteInfo.amountOut.toFixed(6)} {TOKENS.find(t => t.address === tokenOut)?.symbol}</p>
+          <p><strong>Prix moyen :</strong> {quoteInfo.price.toFixed(6)}</p>
+          <p><strong>Slippage :</strong> {quoteInfo.slippage}%</p>
+          <p><strong>Frais gas estimés :</strong> ${quoteInfo.gasUSD}</p>
         </div>
-    </main>
+      )}
+
+      <button onClick={handleSwap} disabled={loading || !quoteData}>
+        {loading ? 'Processing...' : 'Swap maintenant'}
+      </button>
+    </div>
   )
 }
+
+export default Swap

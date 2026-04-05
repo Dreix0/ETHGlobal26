@@ -9,7 +9,7 @@ pub fn write_text_to_file(file_path: String, content: String) -> Result<String, 
     if let Some(parent) = path.parent() {
         if !parent.exists() {
             if let Err(e) = fs::create_dir_all(parent) {
-                return Err(format!("Erreur création dossier : {}", e));
+                return Err(format!("Error creating folder: {}", e));
             }
         }
     }
@@ -17,7 +17,7 @@ pub fn write_text_to_file(file_path: String, content: String) -> Result<String, 
     // Écrit le fichier
     match fs::write(&path, content) {
         Ok(_) => Ok(format!("Fichier enregistré : {}", path.display())),
-        Err(e) => Err(format!("Erreur écriture fichier : {}", e)),
+        Err(e) => Err(format!("Error writing file: {}", e)),
     }
 }
 

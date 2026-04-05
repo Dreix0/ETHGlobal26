@@ -50,7 +50,7 @@ export default function Transfer({ sendEth, sendERC20, show, onClose }: Props) {
 
       setResult(JSON.stringify(res));
     } catch (err: any) {
-      setError(err.message || "Erreur");
+      setError(err.message || "Error");
     } finally {
       setLoading(false);
     }

@@ -36,9 +36,9 @@ export function useUpdateBalance() {
           args: [userAddress] as const,
         };
 
-        // Lecture du fichier
+        // Reading the file
         const filePath = localStorage.getItem("filePath");
-        if (!filePath) throw new Error("filePath manquant");
+        if (!filePath) throw new Error("filePath missing");
 
         const data = (await invoke("read_text_from_file", {
           filePath,
@@ -115,7 +115,7 @@ export function useUpdateBalance() {
           };
         });
 
-        // Écrire le fichier mis à jour (optionnel)
+        // Write the updated file (optional)
         await invoke("write_text_to_file", {
           filePath,
           content: JSON.stringify({ ...json, token: updatedTokens }, null, 2),
@@ -124,7 +124,7 @@ export function useUpdateBalance() {
 
         return updatedTokens;
       } catch (err: any) {
-        setError(err.message || "Erreur inconnue");
+        setError(err.message || "Unknown error");
         return null;
       } finally {
         setLoading(false);

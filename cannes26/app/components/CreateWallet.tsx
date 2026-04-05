@@ -19,33 +19,33 @@ export default function CreateWallet({ show, onClose }: { show: boolean, onClose
             <button
                 onClick={async () => {
                     const path = await open({ title: "Choisir un dossier", multiple: false, directory: true });
-                    console.log("Dossier sélectionné : ", path);
+                    console.log("Selected folder: ", path);
                     if (path) {
                         setFolderPath(path as string);
                         setCurrentSlide(1);
                     }
                 }}
             >
-                Sélectionner un dossier
+                Select a folder
             </button>
         </div>
     );
 
-    // Slide 2 : Mot de passe
+    // Slide 2: Password
     const SlidePassword = (
         <div>
-            <h2>Étape 2 : Définir un mot de passe</h2>
+            <h2>Step 2: Set a password</h2>
             {folderPath && <p>Dossier sélectionné : {folderPath}</p>}
             <form
                 onSubmit={async (e) => {
                     e.preventDefault();
                     if (!folderPath) {
-                        alert("Veuillez d'abord sélectionner un dossier");
+                        alert("Please select a folder first");
                         setCurrentSlide(0);
                         return;
                     }
                     if (!password) {
-                        alert("Veuillez entrer un mot de passe");
+                        alert("Please enter a password");
                         return;
                     }
 
@@ -66,8 +66,8 @@ export default function CreateWallet({ show, onClose }: { show: boolean, onClose
 
                         setCurrentSlide(2);
                     } catch (err) {
-                        console.error("Erreur : ", err);
-                        alert("Erreur lors de la création du wallet");
+                        console.error("Error: ", err);
+                        alert("Error creating wallet");
                     }
                 }}
             >
@@ -75,7 +75,7 @@ export default function CreateWallet({ show, onClose }: { show: boolean, onClose
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mot de passe"
+                    placeholder="Password"
                     required
                 />
                 <button type="submit">Suivant</button>

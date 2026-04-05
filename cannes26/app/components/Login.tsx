@@ -12,7 +12,7 @@ export default function Login() {
   async function getPath(){
     try {
         const filePath = await open({
-        title: 'Choisir un fichier .plr',
+        title: 'Choose a .plr file',
         multiple: false,
         filters: [
             {
@@ -24,9 +24,9 @@ export default function Login() {
 
         setFilePath(filePath);
         localStorage.setItem("filePath", filePath as string);
-        console.log("Chemin du fichier sélectionné : ", filePath);
+        console.log("Selected file path: ", filePath);
     } catch (err) {
-        console.error('Erreur lors de la sélection du fichier :', err);
+        console.error('Error selecting file:', err);
     }
   }
 
@@ -43,7 +43,7 @@ export default function Login() {
       localStorage.setItem("auth", "true");
       router.push("/dashboard");
     } catch (err) {
-      console.log("Erreur : " + err);
+      console.log("Error: " + err);
     }
   }
 
@@ -56,7 +56,7 @@ export default function Login() {
 
       {filePath && 
           <form onSubmit={readFile}>
-              <input type="password" name="password" placeholder='Mot de passe'/>
+              <input type="password" name="password" placeholder='Password'/>
               <button type="submit" >Suivant</button>
           </form>
       }

@@ -12,5 +12,5 @@ fn main() {
         .plugin(tauri_plugin_log::Builder::default().level(log::LevelFilter::Info).build())
         .invoke_handler(tauri::generate_handler![commands::write_text_to_file, commands::read_text_from_file])
         .run(tauri::generate_context!())
-        .expect("Erreur lancement Tauri");
+        .expect("Error launching Tauri");
 }
