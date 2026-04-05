@@ -12,6 +12,8 @@ import { TokenData } from "../types/TokenData";
 import { useUpdateBalance } from "../hooks/useUpdateBalance";
 import AddToken from "../components/AddToken";
 import { Swap } from "../components/Swap";
+import Receive from "../components/Receive";
+import Stake from "../components/Stake";
 
 import { publicClient } from "../clients/publicClient";
 import { sepolia } from "viem/chains";
@@ -23,6 +25,10 @@ export default function Home() {
   const [showAddToken, setShowAddToken] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showSwap, setShowSwap] = useState(false);
+  const [showReceive, setShowReceive] = useState(false);
+  const [showStake, setShowStake] = useState(false);
+
+
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [tokenList, setTokenList] = useState<TokenData[]>([]);
   const [wallet, setWallet] = useState<string>("");
@@ -155,8 +161,8 @@ async function sendERC20({tokenAddress, to, amount, decimals = 18}: {tokenAddres
         <br />
         <button onClick={() => setShowTransfer(true)}>Send</button>
         <button onClick={() => setShowSwap(true)}>Swap</button>
-        <button>Receive</button>
-        <button>Stake</button>
+        <button onClick={() => setShowReceive(true)}>Receive</button>
+        <button onClick={() => setShowStake(true)}>Stake</button>
         <button onClick={disconnect}>Disconnect</button>
       </nav>
 
@@ -184,6 +190,8 @@ async function sendERC20({tokenAddress, to, amount, decimals = 18}: {tokenAddres
 
           <Transfer sendEth={sendEth} sendERC20={sendERC20} show={showTransfer} onClose={() => setShowTransfer(false)} />
           <Swap show={showSwap} onClose={() => setShowSwap(false)} />
+          <Receive adresse={walletAddress} show={showReceive} onClose={() => setShowReceive(false)} />
+          <Stake show={showStake} onClose={() => setShowStake(false)} />
       </main>
   );
 }
