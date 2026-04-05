@@ -11,6 +11,7 @@ import { Wallet } from "ethers";
 import { TokenData } from "../types/TokenData";
 import { useUpdateBalance } from "../hooks/useUpdateBalance";
 import AddToken from "../components/AddToken";
+import { Swap } from "../components/Swap";
 
 import { publicClient } from "../clients/publicClient";
 import { sepolia } from "viem/chains";
@@ -21,6 +22,7 @@ import Transfer from "../components/Transfer";
 export default function Home() {
   const [showAddToken, setShowAddToken] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
+  const [showSwap, setShowSwap] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [tokenList, setTokenList] = useState<TokenData[]>([]);
   const [wallet, setWallet] = useState<string>("");
@@ -152,7 +154,7 @@ async function sendERC20({tokenAddress, to, amount, decimals = 18}: {tokenAddres
         <p>A free and easy to use cold wallet.</p>
         <br />
         <button onClick={() => setShowTransfer(true)}>Send</button>
-        <button>Swap</button>
+        <button onClick={() => setShowSwap(true)}>Swap</button>
         <button>Receive</button>
         <button>Stake</button>
         <button onClick={disconnect}>Disconnect</button>
@@ -180,7 +182,8 @@ async function sendERC20({tokenAddress, to, amount, decimals = 18}: {tokenAddres
         <AddToken userAddress={walletAddress as `0x${string}`} onTokenAdded={readFile} show={showAddToken} onClose={() => setShowAddToken(false)} />
       </section>
 
-        <Transfer sendEth={sendEth} sendERC20={sendERC20} show={showTransfer} onClose={() => setShowTransfer(false)} />
+          <Transfer sendEth={sendEth} sendERC20={sendERC20} show={showTransfer} onClose={() => setShowTransfer(false)} />
+          <Swap show={showSwap} onClose={() => setShowSwap(false)} />
       </main>
   );
 }

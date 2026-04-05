@@ -7,30 +7,34 @@ import { createWalletClient, createPublicClient, http, parseUnits } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { mainnet } from 'viem/chains'
 
-const RPC_URLS = [
-  'https://ethereum.publicnode.com',
-]
+interface Token {
+  symbol: string
+  address: string
+  decimals: number
+}
 
-const TOKENS = [
+const RPC_URLS = ['https://ethereum.publicnode.com']
+
+const TOKENS: Token[] = [
   { symbol: 'ETH', address: '0x0000000000000000000000000000000000000000', decimals: 18 },
   { symbol: 'USDT', address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6 },
 ]
 
-function getPublicClient(rpcUrl: string) {
+function getPublicClient() {
   return createPublicClient({
     chain: mainnet,
-    transport: http(rpcUrl),
+    transport: http('https://ethereum.publicnode.com'),
   })
 }
 
-export default function Swap() {
+export function Swap({ show, onClose }: { show: boolean; onClose: () => void }) {
   const [tokenIn, setTokenIn] = useState(TOKENS[0].address)
   const [tokenOut, setTokenOut] = useState(TOKENS[1].address)
   const [amount, setAmount] = useState('0.001')
   const [loading, setLoading] = useState(false)
   const [quoteData, setQuoteData] = useState<any>(null)
   const [quoteInfo, setQuoteInfo] = useState<any>(null)
-  const [slippage, setSlippage] = useState(0.5) // Slippage en %
+  const [slippage, setSlippage] = useState(0.5)
 
   async function fetchQuote() {
     if (!amount || parseFloat(amount) <= 0) return
@@ -59,7 +63,7 @@ export default function Swap() {
           amount: parseUnits(amount, tokenInObj.decimals).toString(),
           type: 'EXACT_INPUT',
           slippage: slippage,
-          generatePermitAsTransaction: tokenIn !== TOKENS[0].address, // ETH n'a pas besoin de permit
+          generatePermitAsTransaction: tokenIn !== TOKENS[0].address,
         }),
       }).then(r => r.json())
 
@@ -109,13 +113,11 @@ export default function Swap() {
 
       const body: any = { quote: quoteData.quote }
 
-      // Inclure permitData uniquement si signature présente
       if (quoteData.permitData && quoteData.permitData.signature) {
         body.permitData = quoteData.permitData
       }
 
-      // Ajouter deadline pour éviter l’expiration
-      body.deadline = Math.floor(Date.now() / 1000) + 300 // 5 min
+      body.deadline = Math.floor(Date.now() / 1000) + 300
 
       const swapRes = await fetch('/api/swap', {
         method: 'POST',
@@ -152,52 +154,63 @@ export default function Swap() {
     }
   }
 
+    const handlePopupClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+    };
+
+    if (!show) return null;
+
   return (
-    <div style={{ padding: 20, maxWidth: 500 }}>
-      <h2>Swap Mainnet</h2>
+    <main className="overlay" onClick={onClose}>
+        <div style={{ padding: 20, maxWidth: 500 }} className="popup" onClick={handlePopupClick}>
+                <button className="closeBtn" onClick={onClose}>
+                &times;
+                </button>
+        <h2>Swap Mainnet</h2>
 
-      <div style={{ marginBottom: 10 }}>
-        <label>Token d'entrée :</label>
-        <select value={tokenIn} onChange={e => setTokenIn(e.target.value)}>
-          {TOKENS.map(t => <option key={t.address} value={t.address}>{t.symbol}</option>)}
-        </select>
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <label>Token de sortie :</label>
-        <select value={tokenOut} onChange={e => setTokenOut(e.target.value)}>
-          {TOKENS.map(t => <option key={t.address} value={t.address}>{t.symbol}</option>)}
-        </select>
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <label>Montant :</label>
-        <input type="number" value={amount} onChange={e => setAmount(e.target.value)} step="any" />
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <label>Slippage (%):</label>
-        <input type="number" value={slippage} onChange={e => setSlippage(parseFloat(e.target.value))} step="0.1" />
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <button onClick={fetchQuote} disabled={loading}>
-          {loading ? 'Chargement...' : 'Obtenir quote'}
-        </button>
-      </div>
-
-      {quoteInfo && (
-        <div style={{ marginBottom: 10, border: '1px solid #ccc', padding: 10 }}>
-          <p><strong>Montant reçu estimé :</strong> {quoteInfo.amountOut.toFixed(6)} {TOKENS.find(t => t.address === tokenOut)?.symbol}</p>
-          <p><strong>Prix moyen :</strong> {quoteInfo.price.toFixed(6)}</p>
-          <p><strong>Slippage :</strong> {quoteInfo.slippage}%</p>
-          <p><strong>Frais gas estimés :</strong> ${quoteInfo.gasUSD}</p>
+        <div style={{ marginBottom: 10 }}>
+            <label>Token d'entrée :</label>
+            <select value={tokenIn} onChange={e => setTokenIn(e.target.value)}>
+            {TOKENS.map(t => <option key={t.address} value={t.address}>{t.symbol}</option>)}
+            </select>
         </div>
-      )}
 
-      <button onClick={handleSwap} disabled={loading || !quoteData}>
-        {loading ? 'Processing...' : 'Swap maintenant'}
-      </button>
-    </div>
+        <div style={{ marginBottom: 10 }}>
+            <label>Token de sortie :</label>
+            <select value={tokenOut} onChange={e => setTokenOut(e.target.value)}>
+            {TOKENS.map(t => <option key={t.address} value={t.address}>{t.symbol}</option>)}
+            </select>
+        </div>
+
+        <div style={{ marginBottom: 10 }}>
+            <label>Montant :</label>
+            <input type="number" value={amount} onChange={e => setAmount(e.target.value)} step="any" />
+        </div>
+
+        <div style={{ marginBottom: 10 }}>
+            <label>Slippage (%):</label>
+            <input type="number" value={slippage} onChange={e => setSlippage(parseFloat(e.target.value))} step="0.1" />
+        </div>
+
+        <div style={{ marginBottom: 10 }}>
+            <button onClick={fetchQuote} disabled={loading}>
+            {loading ? 'Chargement...' : 'Obtenir quote'}
+            </button>
+        </div>
+
+        {quoteInfo && (
+            <div style={{ marginBottom: 10, border: '1px solid #ccc', padding: 10 }}>
+            <p><strong>Montant reçu estimé :</strong> {quoteInfo.amountOut.toFixed(6)} {TOKENS.find(t => t.address === tokenOut)?.symbol}</p>
+            <p><strong>Prix moyen :</strong> {quoteInfo.price.toFixed(6)}</p>
+            <p><strong>Slippage :</strong> {quoteInfo.slippage}%</p>
+            <p><strong>Frais gas estimés :</strong> ${quoteInfo.gasUSD}</p>
+            </div>
+        )}
+
+        <button onClick={handleSwap} disabled={loading || !quoteData}>
+            {loading ? 'Processing...' : 'Swap maintenant'}
+        </button>
+        </div>
+    </main>
   )
 }
