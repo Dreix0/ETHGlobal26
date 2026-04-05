@@ -4,16 +4,26 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { formatUnits } from "viem";
+import { createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { Wallet } from "ethers";
 
 import { TokenData } from "../types/TokenData";
 import { useUpdateBalance } from "../hooks/useUpdateBalance";
 import AddToken from "../components/AddToken";
+
 import { publicClient } from "../clients/publicClient";
+import { sepolia } from "viem/chains";
+
+  import { createPublicClient, parseUnits } from 'viem'
+import Transfer from "../components/Transfer";
 
 export default function Home() {
   const [showAddToken, setShowAddToken] = useState(false);
-  const [tokenList, setTokenList] = useState<TokenData[]>([]);
+  const [showTransfer, setShowTransfer] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>("");
+  const [tokenList, setTokenList] = useState<TokenData[]>([]);
+  const [wallet, setWallet] = useState<string>("");
   const { updateBalance, loading, error } = useUpdateBalance();
 
   const router = useRouter();
@@ -24,10 +34,10 @@ export default function Home() {
 
   useEffect(() => {
     getNewBalance();
-}, [walletAddress]);
+}, [wallet]);
 
   async function getNewBalance() {
-    if (!walletAddress) return;
+    if (!wallet) return;
     const updated = await updateBalance(walletAddress as `0x${string}`);
     if (updated) setTokenList(updated);
   }
@@ -38,14 +48,96 @@ export default function Home() {
       const json = JSON.parse(data);
       setTokenList(json.token);
       setWalletAddress("0x" + JSON.parse(json.wallet).address);
+      setWallet(json.wallet);
+      console.log("Wallet loaded from file : ", json.wallet);
     } catch (err) {
       console.log("Erreur : " + err);
     }
   }
 
-  function closeAddToken() {
-    setShowAddToken(false);
+async function sendEth(to: string, amountInEth: string) {
+
+  const decryptedWallet = await Wallet.fromEncryptedJson(wallet, "test");
+
+  const walletClient = createWalletClient({
+      chain: sepolia,
+      transport: http(),
+      account: privateKeyToAccount(decryptedWallet.privateKey),
+    })
+
+    console.log(walletClient);
+
+    try {
+      // Convert ETH en wei
+      const value = BigInt(parseFloat(amountInEth) * 1e18)
+
+      // Crée la transaction
+      const txHash = await walletClient.sendTransaction({
+        to,
+        value,
+      })
+
+      console.log('Transaction envoyée, hash :', txHash)
+
+      return txHash
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de ETH:', error)
+      throw error
+    }
   }
+
+
+// -------------------------------------------------------------------------------------------------------
+// ABI minimale ERC20
+const erc20Abi = [
+  {
+    name: 'transfer',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ type: 'bool' }],
+  },
+]
+
+async function sendERC20({tokenAddress, to, amount, decimals = 18}: {tokenAddress: `0x${string}`,to: `0x${string}`, amount: string, decimals?: number}) {
+  
+
+  const decryptedWallet = await Wallet.fromEncryptedJson(wallet, "test");
+
+  const walletClient = createWalletClient({
+      chain: sepolia,
+      transport: http(),
+      account: privateKeyToAccount(decryptedWallet.privateKey),
+    })
+  
+  try {
+    // Conversion en unités du token
+    const value = parseUnits(amount, decimals)
+
+    const hash = await walletClient.writeContract({
+      address: tokenAddress,
+      abi: erc20Abi,
+      functionName: 'transfer',
+      args: [to, value],
+    })
+
+    console.log('Transaction ERC20 envoyée, hash :', hash)
+
+    // 👇 attendre confirmation
+    const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+    return {
+      hash,
+      status: receipt.status,
+    }
+  } catch (error) {
+    console.error('Erreur envoi ERC20:', error)
+    throw error
+  }
+}
 
   function disconnect() {
     localStorage.removeItem("auth");
@@ -59,7 +151,7 @@ export default function Home() {
         <p>V0.1</p>
         <p>A free and easy to use cold wallet.</p>
         <br />
-        <button>Send</button>
+        <button onClick={() => setShowTransfer(true)}>Send</button>
         <button>Swap</button>
         <button>Receive</button>
         <button>Stake</button>
@@ -85,8 +177,10 @@ export default function Home() {
         ))}
 
         <button onClick={() => setShowAddToken(true)}>Add token</button>
-        <AddToken userAddress={walletAddress as `0x${string}`} onTokenAdded={readFile} show={showAddToken} onClose={closeAddToken} />
+        <AddToken userAddress={walletAddress as `0x${string}`} onTokenAdded={readFile} show={showAddToken} onClose={() => setShowAddToken(false)} />
       </section>
-    </main>
+
+        <Transfer sendEth={sendEth} sendERC20={sendERC20} show={showTransfer} onClose={() => setShowTransfer(false)} />
+      </main>
   );
 }

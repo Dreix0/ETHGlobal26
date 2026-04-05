@@ -9,12 +9,14 @@ import { publicClient } from "./../clients/publicClient";
 import { isAddress } from "viem";
 
 export function useUpdateBalance() {
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const updateBalance = useCallback(
     async (userAddress: Address): Promise<TokenData[] | null> => {
       if (!isAddress(userAddress)) {
+        console.error(`Adresse invalide : ${userAddress}`);
         setError(`Adresse invalide: ${userAddress}`);
         return null;
       }
@@ -42,6 +44,7 @@ export function useUpdateBalance() {
           filePath,
         })) as string;
 
+
         const json = JSON.parse(data);
         const tokens: TokenData[] = json.token;
 
@@ -52,10 +55,12 @@ export function useUpdateBalance() {
             t.address !== "0x0000000000000000000000000000000000000000"
         );
 
+
         const nativeTokens = tokens.filter(
           (t) =>
             t.address === "0x0000000000000000000000000000000000000000"
         );
+
 
         // Multicall ERC20
         const contracts = erc20Tokens.map((token) => ({
@@ -73,11 +78,13 @@ export function useUpdateBalance() {
           }
         });
 
+
         // Balance native token
         let nativeBalance: bigint | null = null;
         if (nativeTokens.length > 0) {
           nativeBalance = await publicClient.getBalance({ address: userAddress });
         }
+
 
         // Construire tableau mis à jour
         const updatedTokens: TokenData[] = tokens.map((token) => {
@@ -107,6 +114,7 @@ export function useUpdateBalance() {
           filePath,
           content: JSON.stringify({ ...json, token: updatedTokens }, null, 2),
         });
+
 
         return updatedTokens;
       } catch (err: any) {
