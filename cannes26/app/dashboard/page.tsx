@@ -70,7 +70,7 @@ async function sendEth(to: string, amountInEth: string) {
   const walletClient = createWalletClient({
       chain: sepolia,
       transport: http(),
-      account: privateKeyToAccount(decryptedWallet.privateKey),
+      account: privateKeyToAccount(decryptedWallet.privateKey as `0x${string}`),
     })
 
     console.log(walletClient);
@@ -81,7 +81,7 @@ async function sendEth(to: string, amountInEth: string) {
 
       // Crée la transaction
       const txHash = await walletClient.sendTransaction({
-        to,
+        to: to as `0x${string}`,
         value,
       })
 
@@ -118,7 +118,7 @@ async function sendERC20({tokenAddress, to, amount, decimals = 18}: {tokenAddres
   const walletClient = createWalletClient({
       chain: sepolia,
       transport: http(),
-      account: privateKeyToAccount(decryptedWallet.privateKey),
+      account: privateKeyToAccount(decryptedWallet.privateKey as `0x${string}`),
     })
   
   try {
@@ -155,7 +155,7 @@ async function sendERC20({tokenAddress, to, amount, decimals = 18}: {tokenAddres
   return (
     <main className="page">
       <nav>
-        <h1>Arctic Wallet</h1>
+        <h1>Polar Wallet</h1>
         <p>V0.1</p>
         <p>A free and easy to use cold wallet.</p>
         <br />

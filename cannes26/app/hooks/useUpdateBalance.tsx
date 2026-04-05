@@ -46,7 +46,10 @@ export function useUpdateBalance() {
 
 
         const json = JSON.parse(data);
-        const tokens: TokenData[] = json.token;
+        const tokens: TokenData[] = json.token.map((t: any) => ({
+          ...t,
+          balance: BigInt(t.balance),
+        }));
 
         // Séparer ERC20 / natif
         const erc20Tokens = tokens.filter(
@@ -91,7 +94,7 @@ export function useUpdateBalance() {
           if (token.address && token.address in erc20Balances) {
             return {
               ...token,
-              balance: erc20Balances[token.address].toString(),
+              balance: erc20Balances[token.address],
             };
           }
 
@@ -102,11 +105,14 @@ export function useUpdateBalance() {
           ) {
             return {
               ...token,
-              balance: nativeBalance.toString(),
+              balance: nativeBalance,
             };
           }
 
-          return token;
+          return {
+            ...token,
+            balance: BigInt(token.balance),
+          };
         });
 
         // Écrire le fichier mis à jour (optionnel)

@@ -23,7 +23,7 @@ function getPublicClient(rpcUrl: string) {
   })
 }
 
-export default function Swap() {
+const Swap = () => {
   const [tokenIn, setTokenIn] = useState(TOKENS[0].address)
   const [tokenOut, setTokenOut] = useState(TOKENS[1].address)
   const [amount, setAmount] = useState('0.001')
@@ -48,8 +48,13 @@ export default function Swap() {
       const tokenInObj = TOKENS.find(t => t.address === tokenIn)!
       const tokenOutObj = TOKENS.find(t => t.address === tokenOut)!
 
-      const res = await fetch('/api/quote', {
+      const res = await fetch('https://trade-api.gateway.uniswap.org/v1/quote', {
         method: 'POST',
+        headers: {
+          'x-universal-router-version': '2.0',
+          'x-api-key': process.env.NEXT_PUBLIC_UNISWAP_API_KEY || '',
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           swapper: decryptedWallet.address,
           tokenInChainId: 1,
@@ -93,14 +98,14 @@ export default function Swap() {
       const walletClient = createWalletClient({
         chain: mainnet,
         transport: http(RPC_URLS[0]),
-        account: privateKeyToAccount(decryptedWallet.privateKey),
+        account: privateKeyToAccount(decryptedWallet.privateKey as `0x${string}`),
       })
 
-      let nonce = BigInt(0)
+      let nonce: number = 0
       for (let url of RPC_URLS) {
         try {
           const client = getPublicClient(url)
-          nonce = await client.getTransactionCount({ address: decryptedWallet.address, blockTag: 'pending' })
+          nonce = await client.getTransactionCount({ address: decryptedWallet.address as `0x${string}`, blockTag: 'pending' })
           break
         } catch (err) {
           console.warn(`Impossible de récupérer le nonce depuis ${url}:`, err)
@@ -117,8 +122,12 @@ export default function Swap() {
       // Ajouter deadline pour éviter l’expiration
       body.deadline = Math.floor(Date.now() / 1000) + 300 // 5 min
 
-      const swapRes = await fetch('/api/swap', {
+      const swapRes = await fetch('https://trade-api.gateway.uniswap.org/v1/swap', {
         method: 'POST',
+        headers: {
+          'x-api-key': process.env.NEXT_PUBLIC_UNISWAP_API_KEY || '',
+          'content-type': 'application/json',
+        },
         body: JSON.stringify(body),
       }).then(r => r.json())
       console.log('Réponse swap:', swapRes)
@@ -201,3 +210,5 @@ export default function Swap() {
     </div>
   )
 }
+
+export default Swap

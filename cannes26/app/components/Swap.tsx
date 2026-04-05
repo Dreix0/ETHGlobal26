@@ -97,14 +97,14 @@ export function Swap({ show, onClose }: { show: boolean; onClose: () => void }) 
       const walletClient = createWalletClient({
         chain: mainnet,
         transport: http(RPC_URLS[0]),
-        account: privateKeyToAccount(decryptedWallet.privateKey),
+        account: privateKeyToAccount(decryptedWallet.privateKey as `0x${string}`),
       })
 
-      let nonce = BigInt(0)
+      let nonce = 0
       for (let url of RPC_URLS) {
         try {
-          const client = getPublicClient(url)
-          nonce = await client.getTransactionCount({ address: decryptedWallet.address, blockTag: 'pending' })
+          const client = getPublicClient()
+          nonce = await client.getTransactionCount({ address: decryptedWallet.address as `0x${string}`, blockTag: 'pending' })
           break
         } catch (err) {
           console.warn(`Impossible de récupérer le nonce depuis ${url}:`, err)

@@ -37,7 +37,8 @@ export default function Login() {
       const data = await invoke("read_text_from_file", {filePath}) as string;
 
       const encryptedWallet = JSON.parse(data).wallet as string;
-      const decryptedWallet = Wallet.fromEncryptedJsonSync(encryptedWallet, e.target.password.value);
+      const password = (e.currentTarget.elements.namedItem("password") as HTMLInputElement).value;
+      const decryptedWallet = Wallet.fromEncryptedJsonSync(encryptedWallet, password);
       
       localStorage.setItem("auth", "true");
       router.push("/dashboard");
